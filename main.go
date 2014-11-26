@@ -148,7 +148,7 @@ func main() {
 	}
 
 	timer := time.AfterFunc(*timeout, func() {
-		command.Process.Signal(syscall.SIGTERM)
+		command.Process.Signal(sig)
 	})
 
 	err = command.Wait()
