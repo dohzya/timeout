@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strconv"
 	"syscall"
 	"time"
 )
@@ -94,12 +93,11 @@ func main() {
 	signame := flag.String("s", "15", "The signal to use")
 	flag.Parse()
 
-	timeout := (func() int64 {
+	timeout := (func() time.Duration {
 		if len(flag.Args()) < 1 {
 			die("[timeout] Missing timeout")
 		}
-		arg0 := flag.Arg(0)
-		timeout, err := strconv.ParseInt(arg0, 0, 64)
+		timeout, err := time.ParseDuration(flag.Arg(0))
 		if err != nil {
 			die("[timeout] Bad timeout value")
 		}
@@ -125,7 +123,7 @@ func main() {
 		die2(fmt.Sprintf("[timeout] Can't start the process: %v", err), 127)
 	}
 
-	timer := time.AfterFunc(time.Duration(timeout)*time.Second, func() {
+	timer := time.AfterFunc(timeout, func() {
 		command.Process.Signal(syscall.SIGTERM)
 	})
 
