@@ -2,8 +2,7 @@ package main
 
 /* TODO
  *
- * DURATION is a floating point number with an optional suffix: 's' for seconds
- * (the default), 'm' for minutes, 'h' for hours or 'd' for days.
+ * Accept floating numbers
  */
 
 import (
