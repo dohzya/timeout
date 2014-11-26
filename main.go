@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -89,20 +90,44 @@ func getSignal(name string) (syscall.Signal, bool) {
 	}
 }
 
+func parseDuration(s string) (*time.Duration, error) {
+	dur := s[:len(s)-1]
+	var mod time.Duration
+	c := s[len(s)-1]
+	switch c {
+	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		mod = time.Second
+		dur = s
+	case 's':
+		mod = time.Second
+	case 'm':
+		mod = time.Minute
+	case 'h':
+		mod = time.Hour
+	case 'd':
+		mod = 24 * time.Hour
+	default:
+		return nil, fmt.Errorf("Bad modifier: %v (expected: s|m|h|d)", c)
+	}
+	timeout, err := strconv.ParseInt(dur, 0, 64)
+	if err != nil {
+		return nil, err
+	}
+	duration := time.Duration(timeout) * mod
+	return &duration, nil
+}
+
 func main() {
 	signame := flag.String("s", "15", "The signal to use")
 	flag.Parse()
 
-	timeout := (func() time.Duration {
-		if len(flag.Args()) < 1 {
-			die("[timeout] Missing timeout")
-		}
-		timeout, err := time.ParseDuration(flag.Arg(0))
-		if err != nil {
-			die("[timeout] Bad timeout value")
-		}
-		return timeout
-	})()
+	if len(flag.Args()) < 1 {
+		die("[timeout] Missing timeout")
+	}
+	timeout, timeouterr := parseDuration(flag.Arg(0))
+	if timeouterr != nil {
+		die("[timeout] Bad timeout value")
+	}
 
 	cmd := flag.Args()[1:]
 	if len(cmd) == 0 {
@@ -123,7 +148,7 @@ func main() {
 		die2(fmt.Sprintf("[timeout] Can't start the process: %v", err), 127)
 	}
 
-	timer := time.AfterFunc(timeout, func() {
+	timer := time.AfterFunc(*timeout, func() {
 		command.Process.Signal(syscall.SIGTERM)
 	})
 
