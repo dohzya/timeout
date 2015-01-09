@@ -148,7 +148,9 @@ func main() {
 	}
 
 	timer := time.AfterFunc(*timeout, func() {
-		command.Process.Signal(sig)
+		if err := command.Process.Signal(sig); err != nil {
+			fmt.Fprintf(os.Stderr, "[timeout] Can't kill the process: %v\n", err.Error())
+		}
 	})
 
 	err = command.Wait()
