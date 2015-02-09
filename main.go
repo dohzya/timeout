@@ -150,7 +150,7 @@ func main() {
 
 	timer := time.AfterFunc(*timeout, func() {
 		if err := command.Process.Signal(sig); err != nil {
-			fmt.Fprintf(os.Stderr, "[timeout] Can't kill the process: %v\n", err.Error())
+			fmt.Fprintf(os.Stderr, "[timeout] Can't kill the process: %v\n", err)
 		}
 	})
 
