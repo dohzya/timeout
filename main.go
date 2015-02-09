@@ -139,6 +139,7 @@ func main() {
 	}
 
 	command := exec.Command(cmd[0], cmd[1:]...)
+	command.Stdin = os.Stdin
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
 
